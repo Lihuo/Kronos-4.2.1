@@ -1,14 +1,30 @@
 import Foundation
 
+
+private var kUptimeKey = "Uptime"
+private var kTimestampKey = "Timestamp"
+private var kOffsetKey = "Offset"
+
+///Origin code
+/*
 private let kUptimeKey = "Uptime"
 private let kTimestampKey = "Timestamp"
 private let kOffsetKey = "Offset"
+*/
 
-struct TimeFreeze {
-    private let uptime: TimeInterval
-    private let timestamp: TimeInterval
-    private let offset: TimeInterval
-
+public struct TimeFreeze {
+    
+    private var uptime: TimeInterval
+    private var timestamp: TimeInterval
+    private var offset: TimeInterval
+    
+    ///Original code
+    /*
+     private let uptime: TimeInterval
+     private let timestamp: TimeInterval
+     private let offset: TimeInterval
+     */
+    
     /// The stable timestamp adjusted by the most accurate offset known so far.
     var adjustedTimestamp: TimeInterval {
         return self.offset + self.stableTimestamp
@@ -32,23 +48,54 @@ struct TimeFreeze {
     }
 
     init?(from dictionary: [String: TimeInterval]) {
-        guard let uptime = dictionary[kUptimeKey], let timestamp = dictionary[kTimestampKey],
-            let offset = dictionary[kOffsetKey] else
-        {
+        guard let dictUptime = dictionary[kUptimeKey], let dictTimestamp = dictionary[kTimestampKey], let dictOffset = dictionary[kOffsetKey] else {
             return nil
         }
-
+        
+        let currentUptime = TimeFreeze.systemUptime()
+        //let currentTimestamp = currentTime()
+        //let currentBoot = currentUptime - currentTimestamp
+        //let previousBoot = uptime - timestamp
+        
+//        let result = rint(currentUptime) - rint(dictUptime)
+//        let result2 = rint(currentTimestamp) + (rint(currentUptime) - rint(dictUptime))
+//        print(" \(result) = \(rint(dictUptime)) + (\(rint(currentUptime)) - \(rint(dictUptime)))")
+//        print(" \(result2) = \(rint(currentTimestamp)) + (\(rint(currentUptime)) - \(rint(dictUptime)))")
+        
+        if currentUptime - dictUptime < 0 {
+            UserDefaults.standard.setValue(nil, forKey: "KronosStableTime")
+            return nil
+            
+        } else {
+            self.uptime = dictUptime + (currentUptime - dictUptime)
+            self.timestamp = dictTimestamp + (currentUptime - dictUptime)
+            self.offset = dictOffset
+            
+            let newDict: [String: TimeInterval] = [
+                kUptimeKey: self.uptime,
+                kTimestampKey: self.timestamp,
+                kOffsetKey: offset,
+            ]
+            UserDefaults.standard.setValue(newDict, forKey: "KronosStableTime")
+        }
+        
+        ///Original code
+        /*
+        guard let uptime = dictionary[kUptimeKey], let timestamp = dictionary[kTimestampKey], let offset = dictionary[kOffsetKey] else { return nil }
         let currentUptime = TimeFreeze.systemUptime()
         let currentTimestamp = currentTime()
+
         let currentBoot = currentUptime - currentTimestamp
         let previousBoot = uptime - timestamp
-        if rint(currentBoot) - rint(previousBoot) != 0 {
-            return nil
-        }
 
         self.uptime = uptime
         self.timestamp = timestamp
         self.offset = offset
+
+        if rint(currentBoot) - rint(previousBoot) != 0 {
+            return nil
+        }
+        */
     }
 
     /// Convert this TimeFreeze to a dictionary representation.

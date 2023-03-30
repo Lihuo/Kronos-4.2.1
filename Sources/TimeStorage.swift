@@ -1,4 +1,6 @@
 import Foundation
+import UIKit
+import SystemConfiguration
 
 /// Defines where the user defaults are stored
 public enum TimeStoragePolicy {
@@ -27,14 +29,12 @@ public struct TimeStorage {
 
     /// The most recent stored `TimeFreeze`. Getting retrieves from the UserDefaults defined by the storage
     /// policy. Setting sets the value in UserDefaults
-    var stableTime: TimeFreeze? {
+    public var stableTime: TimeFreeze? {
         get {
-            guard let stored = self.userDefaults.value(forKey: kDefaultsKey) as? [String: TimeInterval],
-                let previousStableTime = TimeFreeze(from: stored) else
-            {
+            guard let stored = self.userDefaults.value(forKey: kDefaultsKey) as? [String: TimeInterval], let previousStableTime = TimeFreeze(from: stored) else {
                 return nil
             }
-
+            
             return previousStableTime
         }
 
